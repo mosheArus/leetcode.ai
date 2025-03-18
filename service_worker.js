@@ -41,7 +41,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     getApiKey().then(async (apiKey) => {
       if (!apiKey) {
-        sendResponse({ answer: "API key not configured. Please set up your API key in the extension settings." });
+        chrome.runtime.sendMessage({
+          action: "stream_error",
+          error: "API key not configured. Please set up your Hugging Face API key in the extension settings and refresh the page."
+        });
         return;
       }
 
