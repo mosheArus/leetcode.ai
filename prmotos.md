@@ -55,9 +55,11 @@ A chat-enabled extension that continuously interacts with the Hugging Face API, 
 Thorough documentation covering installation, testing, AI collaboration details, and future extension ideas.
 
 
-second promot affter the init we should use a modal with search to match the up to date api doc into the ai assient : 
 
+Second  step :
+We contacted the official Hugging Face provider and requested them to fix the interaction with the AI according to the official documentation. We also provided them with the official documentation link and instructed them to press the "Search" button.
 
+Second promot : 
 make the realted div to the ai asssient inside the file content_script.js 
 cp the function  extractLeetCodeInfo to llm deepseek r1 :
 this is the deffuclt div : <div class="relative inline-flex items-center justify-center text-caption px-2 py-1 gap-1 rounded-full bg-fill-secondary text-difficulty-medium dark:text-difficulty-medium">Medium</div>
@@ -67,14 +69,14 @@ the whole desbction and exmples:
 
 the title : <div class="text-title-large font-semibold text-text-primary dark:text-text-primary"><a class="no-underline hover:text-blue-s dark:hover:text-dark-blue-s truncate cursor-text whitespace-normal hover:!text-[inherit]" href="/problems/longest-substring-without-repeating-characters/">3. Longest Substring Without Repeating Characters</a><div class="text-body ml-2 inline-flex items-center gap-2 py-1"><div class="inline-flex items-center space-x-2"></div></div></div>
 
-the editor content : 
-<div class="view-lines monaco-mouse-cursor-text" role="presentation" aria-hidden="true" data-mprt="7" style="position: absolute; font-family: Menlo, Monaco, &quot;Courier New&quot;, monospace; font-weight: normal; font-size: 13px; font-feature-settings: &quot;liga&quot; 0, &quot;calt&quot; 0; line-height: 20px; letter-spacing: 0px; width: 463px; height: 882px;"><div style="top:8px;height:20px;" class="view-line"><span><span class="mtk4">class</span><span class="mtk1">&nbsp;</span><span class="mtk9">Solution</span><span class="mtk1">:</span></span></div><div style="top:28px;height:20px;" class="view-line"><span><span class="mtk1">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="mtk4">def</span><span class="mtk1">&nbsp;</span><span class="mtk10">lengthOfLongestSubstring</span><span class="mtk1">(</span><span class="mtk13">self</span><span class="mtk1">,&nbsp;</span><span class="mtk13">s</span><span class="mtk1">:&nbsp;</span><span class="mtk9">str</span><span class="mtk1">)&nbsp;-&gt;&nbsp;</span><span class="mtk9">int</span><span class="mtk1">:</span></span></div><div style="top:48px;height:20px;" class="view-line"><span><span class="mtk1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span></div></div>
 please refactor the funciton to match the nested above keepits clean code for best partice witout noisy comment  
 
 
 
-#case when you got not frendly ui ux
-fill here....
+#coomon pitfail 
+improve ui ux 
+transfer into streaming procceing from api 
+
 
 
 
