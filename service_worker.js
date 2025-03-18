@@ -46,15 +46,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       try {
-        const headers ={
+        const response = await fetch("https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.2-3B-Instruct/v1/chat/completions", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload)
-        }
-        const response = await fetch("https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.2-3B-Instruct/v1/chat/completions", headers);
+        });
 
         if (!response.ok) {
           const error = await response.json();
@@ -64,12 +63,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullAnswer = "";
+        let buffer = "";
 
         async function processStream() {
           try {
             while (true) {
               const { done, value } = await reader.read();
               if (done) {
+                // Process any remaining data in buffer
+                if (buffer) {
+                  processLine(buffer);
+                }
                 chrome.runtime.sendMessage({
                   action: "stream_complete",
                   answer: fullAnswer
@@ -77,41 +81,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 return;
               }
 
-              const chunk = decoder.decode(value);
-              const lines = chunk.split('\n');
+              const chunk = decoder.decode(value, { stream: true });
+              buffer += chunk;
+
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || "";
 
               for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const jsonStr = line.slice(6).trim();
-                  if (!jsonStr || jsonStr === '[DONE]') continue;
-
-                  try {
-                    const chunkData = JSON.parse(jsonStr);
-                    
-                    // Handle error responses
-                    if (chunkData.error) {
-                      throw new Error(chunkData.error.message);
-                    }
-
-                    // Process valid content chunks
-                    if (chunkData.choices?.[0]?.delta?.content) {
-                      const contentChunk = chunkData.choices[0].delta.content;
-                      fullAnswer += contentChunk;
-                      
-                      chrome.runtime.sendMessage({
-                        action: "stream_chunk",
-                        chunk: contentChunk,
-                        fullResponse: fullAnswer
-                      });
-                    }
-                  } catch (e) {
-                    console.error("Error processing chunk:", e, "Data:", jsonStr);
-                    chrome.runtime.sendMessage({
-                      action: "stream_error",
-                      error: e.message
-                    });
-                  }
-                }
+                processLine(line);
               }
             }
           } catch (error) {
@@ -119,6 +96,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               action: "stream_error",
               error: error.message
             });
+          }
+        }
+
+        function processLine(line) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6).trim();
+            if (!jsonStr || jsonStr === '[DONE]') return;
+
+            try {
+              const chunkData = JSON.parse(jsonStr);
+              
+              if (chunkData.error) {
+                throw new Error(chunkData.error.message);
+              }
+
+              if (chunkData.choices?.[0]?.delta?.content) {
+                const contentChunk = chunkData.choices[0].delta.content;
+                fullAnswer += contentChunk;
+                
+                chrome.runtime.sendMessage({
+                  action: "stream_chunk",
+                  chunk: contentChunk,
+                  fullResponse: fullAnswer
+                });
+              }
+            } catch (e) {
+              console.error("Error processing chunk:", e, "Data:", jsonStr);
+              chrome.runtime.sendMessage({
+                action: "stream_error",
+                error: `Data parsing error: ${e.message}`
+              });
+            }
           }
         }
 

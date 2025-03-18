@@ -120,14 +120,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${sender}`;
     
-    // Check if the message contains code blocks
-    if (sender === 'ai' && (message.includes('```') || message.includes('`'))) {
-      // Process markdown-style code blocks
-      messageDiv.innerHTML = formatMessageWithCode(message);
-      // Add copy buttons to code blocks
-      addCopyButtonsToCodeBlocks(messageDiv);
-      // Add hover effects
-      addHoverEffectsToCodeBlocks();
+    if (sender === 'ai' && message.includes('```')) {
+      // Extract code blocks
+      const parts = message.split('```');
+      
+      for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 0) {
+          // Regular text
+          if (parts[i].trim()) {
+            const textNode = document.createElement('p');
+            textNode.textContent = parts[i].trim();
+            messageDiv.appendChild(textNode);
+          }
+        } else {
+          // Code block
+          const codeBlock = createCodeBlock(parts[i].trim());
+          messageDiv.appendChild(codeBlock);
+        }
+      }
     } else {
       messageDiv.textContent = message;
     }
@@ -504,4 +514,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Focus input on popup open
   chatInput.focus();
-}); 
+});
+
+// Add this function to handle code display and copying
+function createCodeBlock(code, language = '') {
+  const codeBlock = document.createElement('div');
+  codeBlock.className = 'code-block';
+
+  const pre = document.createElement('pre');
+  pre.textContent = code;
+
+  const copyButton = document.createElement('button');
+  copyButton.className = 'copy-button';
+  copyButton.textContent = 'Copy';
+
+  copyButton.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      copyButton.textContent = 'Copied!';
+      copyButton.classList.add('copied');
+      copyButton.style.animation = 'copyFeedback 0.3s ease';
+
+      setTimeout(() => {
+        copyButton.textContent = 'Copy';
+        copyButton.classList.remove('copied');
+        copyButton.style.animation = '';
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  });
+
+  codeBlock.appendChild(pre);
+  codeBlock.appendChild(copyButton);
+  return codeBlock;
+} 
